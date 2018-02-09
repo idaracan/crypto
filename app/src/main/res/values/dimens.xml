@@ -1,0 +1,4 @@
+<resources>
+    <dimen name="fab_margin">10dp</dimen>
+    <dimen name="coin_icon_size">50dp</dimen>
+</resources>
