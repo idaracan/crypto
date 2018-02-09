@@ -10,7 +10,6 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.TextView;
 
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -25,7 +24,10 @@ import org.json.JSONObject;
 public class MainActivity extends AppCompatActivity
         implements RecyclerAdapter.getCoinValuesCallback{
     RecyclerView recyclerView;
-    JSONArray coinData;
+    JSONObject coinData;
+    String[] coinValues = new String[5];
+    String[] coinValueKeys = {Constants.id, Constants.name, Constants.symbol, Constants.usd,
+            Constants.percentChange1h};
     @Override
     protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
@@ -52,60 +54,61 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             return true;
         }
-
         return super.onOptionsItemSelected(item);
     }
 
-    public JSONArray getCoinData(String url){
-        coinData = null;
+
+    public JSONObject getCoin(String coinId, JSONArray coins){
+        JSONObject coin;
+        String idCoin;
+        for (int i = 0; i < coins.length(); i++){
+            try {
+                coin = coins.getJSONObject(i);
+                idCoin = coin.getString("id");
+                if (idCoin.equals(coinId)){
+                    return coin;
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public String[] getCoinValues(final String coinId){
         RequestQueue queue = Volley.newRequestQueue(MainActivity.this);
         JsonArrayRequest request = new JsonArrayRequest
-                (url, new Response.Listener<JSONArray>() {
+                (Constants.url, new Response.Listener<JSONArray>() {
                     @Override
                     public void onResponse(JSONArray response) {
                         Log.v("response",response.toString());
-                        coinData = response;
+                        coinData = getCoin(coinId, response);
+                        try {
+                            for (int i = 0; i < coinValues.length; i++ ) {
+                                coinValues[i] = coinData.getString(coinValueKeys[i]);
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
                     }
                 }, new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        Log.e("JSONerror: ", error.toString());
+                        Log.e("JSONerror", error.toString());
                     }
                 });
         queue.add(request);
-
-        return coinData;
-    }
-
-    @Override
-    public String getCoinPrice(String coin) {
-        String url = Constants.url + coin;
-        JSONArray rawCoinData = getCoinData(url);
-        try {
-            JSONObject jsonObject = rawCoinData.getJSONObject(0);
-            String value = jsonObject.getString("price_usd");
-            return value;
-        } catch (JSONException e) {
-            e.printStackTrace();
-        } catch (Exception ex){
-            ex.printStackTrace();
-        }
-        return null;
+        return coinValues;
     }
 }

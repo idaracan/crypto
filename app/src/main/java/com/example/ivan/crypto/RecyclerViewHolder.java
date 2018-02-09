@@ -10,12 +10,13 @@ import android.widget.TextView;
  */
 
 public class RecyclerViewHolder extends RecyclerView.ViewHolder {
-    TextView nombreMoneda, valorMoneda;
+    TextView nombreMoneda, usdPrice, symbol;
     ImageView logoMoneda;
     public RecyclerViewHolder(View itemView) {
         super(itemView);
         nombreMoneda = itemView.findViewById(R.id.name);
-        valorMoneda = itemView.findViewById(R.id.value);
         logoMoneda = itemView.findViewById(R.id.coin_icon);
+        usdPrice = itemView.findViewById(R.id.usdvalue);
+        symbol = itemView.findViewById(R.id.symbol);
     }
 }

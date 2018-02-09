@@ -13,23 +13,22 @@ import android.widget.Toast;
  */
 
 public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerViewHolder> {
-    String[] monedas = {"bitcoin"};
-    String[] valores = {"usd"};
-    Context context;
-    LayoutInflater layoutInflater;
+    private String[] monedas = {"bitcoin","ethereum"};
+    private Context context;
+    private LayoutInflater layoutInflater;
     private getCoinValuesCallback callback;
     View.OnClickListener onClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
             RecyclerViewHolder viewHolder = (RecyclerViewHolder) v.getTag();
             int pos = viewHolder.getAdapterPosition();
-            String price = callback.getCoinPrice(monedas[pos]);
-            Toast.makeText(context,"Coin: " + monedas[pos] + "\n Price: " + price
-                    , Toast.LENGTH_SHORT).show();
+            String[] values = callback.getCoinValues(monedas[pos]);
+            viewHolder.symbol.setText(values[2]);
+            viewHolder.usdPrice.setText(String.format("%s USD", values[3]));
         }
     };
 
-    public RecyclerAdapter(Context context){
+    RecyclerAdapter(Context context){
         this.context = context;
         layoutInflater = LayoutInflater.from(context);
     }
@@ -37,28 +36,26 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerViewHolder> {
     @Override
     public RecyclerViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = layoutInflater.inflate(R.layout.item,parent,false);
-        RecyclerViewHolder recyclerViewHolder = new RecyclerViewHolder(view);
-        return recyclerViewHolder;
+        return new RecyclerViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(RecyclerViewHolder holder, int position) {
         holder.nombreMoneda.setText(monedas[position]);
-        holder.valorMoneda.setText(valores[position]);
         holder.logoMoneda.setOnClickListener(onClickListener);
         holder.logoMoneda.setTag(holder);
     }
 
     @Override
     public int getItemCount() {
-        return valores.length;
+        return monedas.length;
     }
 
-    public void setCallback(getCoinValuesCallback callback) {
+    void setCallback(getCoinValuesCallback callback) {
         this.callback = callback;
     }
 
     public interface getCoinValuesCallback{
-        String getCoinPrice(String coin);
+        String[] getCoinValues(String coin);
     }
 }

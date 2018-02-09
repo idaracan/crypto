@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">Crypto</string>
     <string name="action_settings">Settings</string>
-    <string name="coin">Coin</string>
-    <string name="value">value</string>
+    <string name="coin">Coin </string>
+    <string name="value">Price</string>
+    <string name="symbol">Symbol</string>
 </resources>
