@@ -7,4 +7,7 @@
     <color name="myColorPrimary">#6A1B9A</color>
     <color name="myColorPrimaryDark">#4A148C</color>
     <color name="myColorAccent">#4DB6AC</color>
+    <color name="myBackground">#EEEEEE</color>
+    <color name="red">#FF0000</color>
+    <color name="green">#00FF00</color>
 </resources>

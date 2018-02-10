@@ -4,4 +4,5 @@
     <string name="coin">Coin </string>
     <string name="value">Price</string>
     <string name="symbol">Symbol</string>
+    <string name="percent">Percent</string>
 </resources>

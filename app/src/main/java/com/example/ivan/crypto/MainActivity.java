@@ -42,6 +42,8 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        getCoinValues("");
+
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -93,6 +95,9 @@ public class MainActivity extends AppCompatActivity
                     @Override
                     public void onResponse(JSONArray response) {
                         Log.v("response",response.toString());
+                        if (coinId.isEmpty()){
+                            return ;
+                        }
                         coinData = getCoin(coinId, response);
                         try {
                             for (int i = 0; i < coinValues.length; i++ ) {

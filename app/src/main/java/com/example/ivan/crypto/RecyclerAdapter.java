@@ -1,6 +1,7 @@
 package com.example.ivan.crypto;
 
 import android.content.Context;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -13,7 +14,7 @@ import android.widget.Toast;
  */
 
 public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerViewHolder> {
-    private String[] monedas = {"bitcoin","ethereum"};
+    private String[] monedas = {"bitcoin","iota"};
     private Context context;
     private LayoutInflater layoutInflater;
     private getCoinValuesCallback callback;
@@ -23,8 +24,22 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerViewHolder> {
             RecyclerViewHolder viewHolder = (RecyclerViewHolder) v.getTag();
             int pos = viewHolder.getAdapterPosition();
             String[] values = callback.getCoinValues(monedas[pos]);
-            viewHolder.symbol.setText(values[2]);
-            viewHolder.usdPrice.setText(String.format("%s USD", values[3]));
+            if (values[2] != null) {
+                viewHolder.symbol.setText(values[2]);
+                viewHolder.usdPrice.setText(String.format("%s USD", values[3]));
+                viewHolder.percentage.setText(String.format("%s%%", values[4]));
+                float percentage = Float.parseFloat(values[4]);
+                if (percentage < 0){
+                    viewHolder.percentage.setTextColor(
+                            ContextCompat.getColor(context, R.color.red)
+                    );
+                } else if (percentage > 0){
+                    viewHolder.percentage.setTextColor(
+                            ContextCompat.getColor(context, R.color.green)
+                    );
+                }
+                values = null;
+            }
         }
     };
 
