@@ -2,6 +2,7 @@ package com.example.ivan.crypto;
 
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -25,14 +26,11 @@ public class MainActivity extends AppCompatActivity
         implements RecyclerAdapter.getCoinValuesCallback{
     RecyclerView recyclerView;
     JSONObject coinData;
-    String[] coinValues = new String[5];
-    String[] coinValueKeys = {Constants.id, Constants.name, Constants.symbol, Constants.usd,
-            Constants.percentChange1h};
     @Override
     protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        RecyclerAdapter adapter = new RecyclerAdapter(this);
+        final RecyclerAdapter adapter = new RecyclerAdapter(this);
         recyclerView = findViewById(R.id.recyclerView);
         recyclerView.setAdapter(adapter);
         recyclerView.setHasFixedSize(true);
@@ -41,8 +39,6 @@ public class MainActivity extends AppCompatActivity
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-        getCoinValues("");
 
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -88,22 +84,38 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public String[] getCoinValues(final String coinId){
+    public void getCoinValues(final String coinId, final RecyclerViewHolder viewHolder){
         RequestQueue queue = Volley.newRequestQueue(MainActivity.this);
         JsonArrayRequest request = new JsonArrayRequest
                 (Constants.url, new Response.Listener<JSONArray>() {
                     @Override
                     public void onResponse(JSONArray response) {
+                        float percentage;
                         Log.v("response",response.toString());
-                        if (coinId.isEmpty()){
-                            return ;
-                        }
                         coinData = getCoin(coinId, response);
-                        try {
-                            for (int i = 0; i < coinValues.length; i++ ) {
-                                coinValues[i] = coinData.getString(coinValueKeys[i]);
+                        try{
+                            viewHolder.symbol.setText(
+                                    String.format("%s",coinData.getString(Constants.symbol))
+                            );
+                            viewHolder.usdPrice.setText(
+                                    String.format("%s USD",coinData.getString(Constants.usd))
+                            );
+                            try {
+                                percentage = Float.parseFloat(coinData.getString(Constants.percentChange1h));
+                                viewHolder.percentage.setText(String.format("%s%%",percentage));
+                                if (percentage < 0) {
+                                    viewHolder.percentage.setTextColor(
+                                            ContextCompat.getColor(getApplicationContext(), R.color.red)
+                                    );
+                                }else if (percentage > 0){
+                                    viewHolder.percentage.setTextColor(
+                                            ContextCompat.getColor(getApplicationContext(), R.color.green)
+                                    );
+                                }
+                            } catch (NumberFormatException e){
+                                viewHolder.percentage.setText(String.format("%s%%","?"));
                             }
-                        } catch (JSONException e) {
+                        }catch (JSONException e){
                             e.printStackTrace();
                         }
                     }
@@ -114,6 +126,5 @@ public class MainActivity extends AppCompatActivity
                     }
                 });
         queue.add(request);
-        return coinValues;
     }
 }

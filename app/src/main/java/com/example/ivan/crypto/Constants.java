@@ -5,7 +5,7 @@ package com.example.ivan.crypto;
  */
 
 public class Constants {
-   public static String url = "https://api.coinmarketcap.com/v1/ticker/";
+   public static String url = "https://api.coinmarketcap.com/v1/ticker/?limit=0";
    public static String id ="id";
    public static String name = "name";
    public static String symbol = "symbol";

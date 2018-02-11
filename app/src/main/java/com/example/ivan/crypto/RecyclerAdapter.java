@@ -14,32 +14,17 @@ import android.widget.Toast;
  */
 
 public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerViewHolder> {
-    private String[] monedas = {"bitcoin","iota"};
+    private String[] monedas = {"bitcoin","iota","dmarket"};
     private Context context;
     private LayoutInflater layoutInflater;
     private getCoinValuesCallback callback;
+
     View.OnClickListener onClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
             RecyclerViewHolder viewHolder = (RecyclerViewHolder) v.getTag();
             int pos = viewHolder.getAdapterPosition();
-            String[] values = callback.getCoinValues(monedas[pos]);
-            if (values[2] != null) {
-                viewHolder.symbol.setText(values[2]);
-                viewHolder.usdPrice.setText(String.format("%s USD", values[3]));
-                viewHolder.percentage.setText(String.format("%s%%", values[4]));
-                float percentage = Float.parseFloat(values[4]);
-                if (percentage < 0){
-                    viewHolder.percentage.setTextColor(
-                            ContextCompat.getColor(context, R.color.red)
-                    );
-                } else if (percentage > 0){
-                    viewHolder.percentage.setTextColor(
-                            ContextCompat.getColor(context, R.color.green)
-                    );
-                }
-                values = null;
-            }
+            callback.getCoinValues(monedas[pos], viewHolder);
         }
     };
 
@@ -71,6 +56,6 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerViewHolder> {
     }
 
     public interface getCoinValuesCallback{
-        String[] getCoinValues(String coin);
+        void getCoinValues(String coin, RecyclerViewHolder viewHolder);
     }
 }
