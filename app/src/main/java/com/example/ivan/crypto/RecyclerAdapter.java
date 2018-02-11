@@ -14,11 +14,11 @@ import android.widget.Toast;
  */
 
 public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerViewHolder> {
-    private String[] monedas = {"bitcoin","iota","dmarket"};
+    private String[] monedas = {};
     private LayoutInflater layoutInflater;
     private getCoinValuesCallback callback;
 
-    View.OnClickListener onClickListener = new View.OnClickListener() {
+    private View.OnClickListener onClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
             RecyclerViewHolder viewHolder = (RecyclerViewHolder) v.getTag();

@@ -25,10 +25,15 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class MainActivity extends AppCompatActivity
         implements RecyclerAdapter.getCoinValuesCallback{
     RecyclerView recyclerView;
     JSONObject coinData;
+    List<String> coinIdList = new ArrayList<>();
+    List<String> coinNameList = new ArrayList<>();
     @Override
     protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
@@ -48,7 +53,8 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onClick(View view)
             {
-
+                Toast.makeText(getApplicationContext(),coinNameList.get(
+                        coinNameList.size()-1),Toast.LENGTH_LONG).show();
             }
         });
     }
@@ -62,12 +68,45 @@ public class MainActivity extends AppCompatActivity
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
-        if (id == R.id.action_settings) {
-            return true;
+        switch (id) {
+            case R.id.action_settings:
+                return true;
+            case R.id.refresh:
+                Toast.makeText(getApplicationContext(),
+                        "Refreshing all data",Toast.LENGTH_SHORT).show();
+                RequestQueue queue = Volley.newRequestQueue(MainActivity.this);
+                JsonArrayRequest request = new JsonArrayRequest(Constants.url, new Response.Listener<JSONArray>() {
+                    @Override
+                    public void onResponse(JSONArray response) {
+                        Log.v("response",response.toString());
+                        for (int i = 0; i < response.length(); i++){
+                            try {
+                                coinIdList.add(
+                                        response.getJSONObject(i).getString(Constants.id)
+                                );
+                                coinNameList.add(
+                                        response.getJSONObject(i).getString(Constants.name)
+                                );
+                            }catch (JSONException e){
+                                e.printStackTrace();
+                            }
+                        }
+                        Toast.makeText(getApplicationContext(),"Done refreshing",Toast.LENGTH_SHORT).show();
+                    }
+                }, new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Toast.makeText(getApplicationContext(),getResources().getString(R.string.error),
+                                Toast.LENGTH_SHORT).show();
+                    }
+                });
+                queue.add(request);
+                break;
+            default:
+                break;
         }
         return super.onOptionsItemSelected(item);
     }
-
 
     public JSONObject getCoin(String coinId, JSONArray coins){
         JSONObject coin;
@@ -120,6 +159,11 @@ public class MainActivity extends AppCompatActivity
                             }
                         }catch (JSONException e){
                             e.printStackTrace();
+                        }catch (NullPointerException nullptr){
+                            nullptr.printStackTrace();
+                            Toast.makeText(getApplicationContext(),
+                                    getResources().getString(R.string.error),
+                                    Toast.LENGTH_SHORT).show();
                         }
                     }
                 }, new Response.ErrorListener() {
