@@ -1,10 +1,12 @@
 package com.example.ivan.crypto;
 
-import android.content.Context;
-import android.content.SharedPreferences;
+import android.app.Dialog;
+import android.content.DialogInterface;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -13,6 +15,8 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 import android.widget.Toast;
 
 import com.android.volley.RequestQueue;
@@ -51,12 +55,40 @@ public class MainActivity extends AppCompatActivity
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view)
-            {
-                Toast.makeText(getApplicationContext(),coinNameList.get(
-                        coinNameList.size()-1),Toast.LENGTH_LONG).show();
+            public void onClick(View v) {
+                makeDialog().show();
             }
         });
+    }
+
+    public Dialog makeDialog(){
+        AlertDialog.Builder builder;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            builder = new AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert);
+        } else {
+            builder = new AlertDialog.Builder(this);
+        }
+        String[] coinList = new String[coinNameList.size()];
+        for (int i = 0; i < coinList.length; i++){
+            coinList[i] = coinNameList.get(i);
+        }
+        builder.setTitle(getResources().getString(R.string.selector));
+        ArrayAdapter<String> arrayAdapter =
+                new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, coinNameList);
+        builder.setView(R.layout.dialog_coinlist);
+        builder.setPositiveButton(getResources().getString(R.string.ok), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+        builder.setNeutralButton(getResources().getString(R.string.cancel), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+        return builder.create();
     }
 
     @Override
@@ -73,12 +105,12 @@ public class MainActivity extends AppCompatActivity
                 return true;
             case R.id.refresh:
                 Toast.makeText(getApplicationContext(),
-                        "Refreshing all data",Toast.LENGTH_SHORT).show();
+                        getResources().getString(R.string.refreshing),Toast.LENGTH_SHORT).show();
                 RequestQueue queue = Volley.newRequestQueue(MainActivity.this);
                 JsonArrayRequest request = new JsonArrayRequest(Constants.url, new Response.Listener<JSONArray>() {
                     @Override
                     public void onResponse(JSONArray response) {
-                        Log.v("response",response.toString());
+                        //Log.v("response",response.toString());
                         for (int i = 0; i < response.length(); i++){
                             try {
                                 coinIdList.add(
@@ -91,7 +123,8 @@ public class MainActivity extends AppCompatActivity
                                 e.printStackTrace();
                             }
                         }
-                        Toast.makeText(getApplicationContext(),"Done refreshing",Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getApplicationContext(),getResources()
+                                .getString(R.string.done),Toast.LENGTH_SHORT).show();
                     }
                 }, new Response.ErrorListener() {
                     @Override
@@ -133,7 +166,7 @@ public class MainActivity extends AppCompatActivity
                     @Override
                     public void onResponse(JSONArray response) {
                         float percentage;
-                        Log.v("response",response.toString());
+                        //Log.v("response",response.toString());
                         coinData = getCoin(coinId, response);
                         try{
                             viewHolder.symbol.setText(
