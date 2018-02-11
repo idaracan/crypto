@@ -15,7 +15,6 @@ import android.widget.Toast;
 
 public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerViewHolder> {
     private String[] monedas = {"bitcoin","iota","dmarket"};
-    private Context context;
     private LayoutInflater layoutInflater;
     private getCoinValuesCallback callback;
 
@@ -29,7 +28,6 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerViewHolder> {
     };
 
     RecyclerAdapter(Context context){
-        this.context = context;
         layoutInflater = LayoutInflater.from(context);
     }
 

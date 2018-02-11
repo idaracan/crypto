@@ -1,5 +1,7 @@
 package com.example.ivan.crypto;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.content.ContextCompat;
@@ -11,6 +13,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Toast;
 
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -122,7 +125,9 @@ public class MainActivity extends AppCompatActivity
                 }, new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        Log.e("JSONerror", error.toString());
+                        error.printStackTrace();
+                        Toast.makeText(getApplicationContext(),getResources().getString(R.string.error),
+                                Toast.LENGTH_SHORT).show();
                     }
                 });
         queue.add(request);
