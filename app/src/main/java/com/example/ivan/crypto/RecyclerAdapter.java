@@ -15,6 +15,12 @@ import android.widget.Toast;
 
 public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerViewHolder> {
     private String[] monedas = {};
+
+    public void setMonedas(String[] monedas) {
+        this.monedas = monedas;
+        notifyDataSetChanged();
+    }
+
     private LayoutInflater layoutInflater;
     private getCoinValuesCallback callback;
 

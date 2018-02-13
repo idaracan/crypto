@@ -12,9 +12,11 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.util.SparseBooleanArray;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -30,6 +32,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity
@@ -38,11 +41,13 @@ public class MainActivity extends AppCompatActivity
     JSONObject coinData;
     List<String> coinIdList = new ArrayList<>();
     List<String> coinNameList = new ArrayList<>();
+    ListView listView;
+    RecyclerAdapter adapter;
     @Override
     protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        final RecyclerAdapter adapter = new RecyclerAdapter(this);
+        adapter = new RecyclerAdapter(this);
         recyclerView = findViewById(R.id.recyclerView);
         recyclerView.setAdapter(adapter);
         recyclerView.setHasFixedSize(true);
@@ -56,7 +61,12 @@ public class MainActivity extends AppCompatActivity
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                makeDialog().show();
+                Dialog dialog = makeDialog();
+                dialog.show();
+                ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(MainActivity.this,
+                                android.R.layout.simple_list_item_multiple_choice, coinNameList);
+                listView = dialog.findViewById(R.id.list);
+                listView.setAdapter(arrayAdapter);
             }
         });
     }
@@ -64,21 +74,23 @@ public class MainActivity extends AppCompatActivity
     public Dialog makeDialog(){
         AlertDialog.Builder builder;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            builder = new AlertDialog.Builder(this, android.R.style.Theme_Material_Dialog_Alert);
+            builder = new AlertDialog.Builder(this, android.R.style.Theme_Material_Light_Dialog_Alert);
         } else {
             builder = new AlertDialog.Builder(this);
         }
-        String[] coinList = new String[coinNameList.size()];
-        for (int i = 0; i < coinList.length; i++){
-            coinList[i] = coinNameList.get(i);
-        }
-        builder.setTitle(getResources().getString(R.string.selector));
-        ArrayAdapter<String> arrayAdapter =
-                new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, coinNameList);
         builder.setView(R.layout.dialog_coinlist);
         builder.setPositiveButton(getResources().getString(R.string.ok), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
+                SparseBooleanArray checkedItems = listView.getCheckedItemPositions();
+                String[] monedas = new String[checkedItems.size()];
+                for (int i = 0; i < checkedItems.size(); i++){
+                    if(checkedItems.get(checkedItems.keyAt(i))){
+                        Log.v("checked",coinNameList.get(checkedItems.keyAt(i)));
+                        monedas[i] = coinIdList.get(checkedItems.keyAt(i));
+                    }
+                }
+                adapter.setMonedas(monedas);
                 dialog.cancel();
             }
         });
@@ -166,7 +178,6 @@ public class MainActivity extends AppCompatActivity
                     @Override
                     public void onResponse(JSONArray response) {
                         float percentage;
-                        //Log.v("response",response.toString());
                         coinData = getCoin(coinId, response);
                         try{
                             viewHolder.symbol.setText(
