@@ -3,6 +3,7 @@ package com.example.ivan.crypto;
 import android.app.Dialog;
 import android.content.ContentValues;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Build;
 import android.os.Bundle;
@@ -18,7 +19,6 @@ import android.util.SparseBooleanArray;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -34,7 +34,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity
@@ -49,15 +48,17 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        adapter = new RecyclerAdapter(this);
-        recyclerView = findViewById(R.id.recyclerView);
-        recyclerView.setAdapter(adapter);
-        recyclerView.setHasFixedSize(true);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        adapter.setCallback(this);
+        refreshRecyclerView();
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        if (getIntent().hasExtra(Constants.myCoins)){
+            Intent intent = getIntent();
+            Bundle bundle = intent.getBundleExtra(Constants.myCoins);
+            coinNameList = bundle.getStringArrayList(Constants.name);
+            coinIdList = bundle.getStringArrayList(Constants.id);
+        }
 
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -71,6 +72,15 @@ public class MainActivity extends AppCompatActivity
                 listView.setAdapter(arrayAdapter);
             }
         });
+    }
+
+    private void refreshRecyclerView() {
+        adapter = new RecyclerAdapter(this);
+        recyclerView = findViewById(R.id.recyclerView);
+        recyclerView.setAdapter(adapter);
+        recyclerView.setHasFixedSize(true);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        adapter.setCallback(this);
     }
 
     public Dialog makeDialog(){
@@ -93,6 +103,7 @@ public class MainActivity extends AppCompatActivity
                         Log.v("checked",coinNameList.get(checkedItems.keyAt(i)));
                         contentValues = new ContentValues();
                         contentValues.put(Constants.coinId,coinIdList.get(checkedItems.keyAt(i)));
+                        contentValues.put(Constants.name,coinNameList.get(checkedItems.keyAt(i)));
                         db.insert(Constants.myCoins,null,contentValues);
                     }
                 }
@@ -120,14 +131,16 @@ public class MainActivity extends AppCompatActivity
         switch (id) {
             case R.id.action_settings:
                 return true;
-            case R.id.refresh:
+            case R.id.refresh_data:
+                refreshRecyclerView();
+            break;
+            case R.id.refresh_list:
                 Toast.makeText(getApplicationContext(),
                         getResources().getString(R.string.refreshing),Toast.LENGTH_SHORT).show();
                 RequestQueue queue = Volley.newRequestQueue(MainActivity.this);
-                JsonArrayRequest request = new JsonArrayRequest(Constants.url, new Response.Listener<JSONArray>() {
+                JsonArrayRequest request = new JsonArrayRequest(Constants.urlAll, new Response.Listener<JSONArray>() {
                     @Override
                     public void onResponse(JSONArray response) {
-                        //Log.v("response",response.toString());
                         for (int i = 0; i < response.length(); i++){
                             try {
                                 coinIdList.add(
@@ -179,7 +192,7 @@ public class MainActivity extends AppCompatActivity
     public void getCoinValues(final String coinId, final RecyclerViewHolder viewHolder){
         RequestQueue queue = Volley.newRequestQueue(MainActivity.this);
         JsonArrayRequest request = new JsonArrayRequest
-                (Constants.url, new Response.Listener<JSONArray>() {
+                (Constants.url+coinId, new Response.Listener<JSONArray>() {
                     @Override
                     public void onResponse(JSONArray response) {
                         float percentage;
