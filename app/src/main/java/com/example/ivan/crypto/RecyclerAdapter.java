@@ -3,14 +3,10 @@ package com.example.ivan.crypto;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ListView;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,8 +17,8 @@ import java.util.List;
 
 public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerViewHolder> {
 
-    public List<String> myCoins;
-    public List<String> myCoinNames;
+    private List<String> myCoins;
+    private List<String> myCoinNames;
     private LayoutInflater layoutInflater;
     private getCoinValuesCallback callback;
     private Context context;
@@ -54,7 +50,7 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerViewHolder> {
         layoutInflater = LayoutInflater.from(context);
     }
 
-    public void refresh(Context context) {
+    void refresh(Context context) {
         myCoins = new ArrayList<>();
         myCoinNames = new ArrayList<>();
         DataBase dataBase = new DataBase(context);

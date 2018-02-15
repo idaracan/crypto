@@ -1,7 +1,6 @@
 package com.example.ivan.crypto;
 
 import android.content.Context;
-import android.database.DatabaseErrorHandler;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
@@ -15,11 +14,11 @@ public class DataBase extends SQLiteOpenHelper {
             + Constants.id + " integer primary key autoincrement,"
             + Constants.coinId + " text unique,"
             + Constants.name + " text)";
-    public static final String databaseName = "storedCoins";
-    public static final int databaseVersion = 1;
-    public static final String deleteEntries = "drop table if exists" + Constants.myCoins;
+    private static final String databaseName = "storedCoins";
+    private static final int databaseVersion = 1;
+    private static final String deleteEntries = "drop table if exists" + Constants.myCoins;
 
-    public DataBase(Context context) {
+    DataBase(Context context) {
         super(context, databaseName, null, databaseVersion);
     }
 
