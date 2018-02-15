@@ -22,6 +22,7 @@ import java.util.List;
 public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerViewHolder> {
 
     public List<String> myCoins;
+    public List<String> myCoinNames;
     private LayoutInflater layoutInflater;
     private getCoinValuesCallback callback;
     private Context context;
@@ -55,12 +56,14 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerViewHolder> {
 
     public void refresh(Context context) {
         myCoins = new ArrayList<>();
+        myCoinNames = new ArrayList<>();
         DataBase dataBase = new DataBase(context);
         SQLiteDatabase liteDatabase = dataBase.getWritableDatabase();
         Cursor cursor = liteDatabase.rawQuery("select * from "+ Constants.myCoins,null);
         if (cursor.moveToFirst()){
             do {
                 myCoins.add(cursor.getString(cursor.getColumnIndex(Constants.coinId)));
+                myCoinNames.add(cursor.getString(cursor.getColumnIndex(Constants.name)));
             }while (cursor.moveToNext());
         }
         cursor.close();
@@ -75,12 +78,13 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerViewHolder> {
 
     @Override
     public void onBindViewHolder(RecyclerViewHolder holder, int position) {
-        holder.nombreMoneda.setText(myCoins.get(position));
+        holder.nombreMoneda.setText(myCoinNames.get(position));
         holder.logoMoneda.setOnClickListener(onClickListener);
         holder.logoMoneda.setTag(holder);
         holder.logoMoneda.isLongClickable();
         holder.logoMoneda.setOnLongClickListener(onLongClickListener);
         holder.logoMoneda.setTag(holder);
+        callback.getCoinValues(myCoins.get(position), holder);
     }
 
     @Override

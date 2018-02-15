@@ -13,7 +13,8 @@ public class DataBase extends SQLiteOpenHelper {
 
     private static final String createQuery = "create table " + Constants.myCoins + "("
             + Constants.id + " integer primary key autoincrement,"
-            + Constants.coinId + " text unique)" ;
+            + Constants.coinId + " text unique,"
+            + Constants.name + " text)";
     public static final String databaseName = "storedCoins";
     public static final int databaseVersion = 1;
     public static final String deleteEntries = "drop table if exists" + Constants.myCoins;
