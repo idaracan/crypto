@@ -1,18 +1,26 @@
 package com.example.ivan.crypto;
 
-import android.content.Context;
-import android.content.SharedPreferences;
+import android.app.Dialog;
+import android.content.ContentValues;
+import android.content.DialogInterface;
+import android.database.sqlite.SQLiteDatabase;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.util.SparseBooleanArray;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 import android.widget.Toast;
 
 import com.android.volley.RequestQueue;
@@ -25,15 +33,23 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 public class MainActivity extends AppCompatActivity
         implements RecyclerAdapter.getCoinValuesCallback{
     RecyclerView recyclerView;
     JSONObject coinData;
+    List<String> coinIdList = new ArrayList<>();
+    List<String> coinNameList = new ArrayList<>();
+    ListView listView;
+    RecyclerAdapter adapter;
     @Override
     protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        final RecyclerAdapter adapter = new RecyclerAdapter(this);
+        adapter = new RecyclerAdapter(this);
         recyclerView = findViewById(R.id.recyclerView);
         recyclerView.setAdapter(adapter);
         recyclerView.setHasFixedSize(true);
@@ -46,11 +62,50 @@ public class MainActivity extends AppCompatActivity
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view)
-            {
-
+            public void onClick(View v) {
+                Dialog dialog = makeDialog();
+                dialog.show();
+                ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(MainActivity.this,
+                                android.R.layout.simple_list_item_multiple_choice, coinNameList);
+                listView = dialog.findViewById(R.id.list);
+                listView.setAdapter(arrayAdapter);
             }
         });
+    }
+
+    public Dialog makeDialog(){
+        AlertDialog.Builder builder;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            builder = new AlertDialog.Builder(this, android.R.style.Theme_Material_Light_Dialog_Alert);
+        } else {
+            builder = new AlertDialog.Builder(this);
+        }
+        builder.setView(R.layout.dialog_coinlist);
+        builder.setPositiveButton(getResources().getString(R.string.ok), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                DataBase dataBase = new DataBase(getApplicationContext());
+                SQLiteDatabase db = dataBase.getWritableDatabase();
+                ContentValues contentValues;
+                SparseBooleanArray checkedItems = listView.getCheckedItemPositions();
+                for (int i = 0; i < checkedItems.size(); i++){
+                    if(checkedItems.get(checkedItems.keyAt(i))){
+                        Log.v("checked",coinNameList.get(checkedItems.keyAt(i)));
+                        contentValues = new ContentValues();
+                        contentValues.put(Constants.coinId,coinIdList.get(checkedItems.keyAt(i)));
+                        db.insert(Constants.myCoins,null,contentValues);
+                    }
+                }
+                adapter.refresh(getApplicationContext());
+                dialog.dismiss();
+            }
+        });
+        builder.setNeutralButton(getResources().getString(R.string.cancel), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+            }
+        });
+        return builder.create();
     }
 
     @Override
@@ -62,12 +117,46 @@ public class MainActivity extends AppCompatActivity
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
-        if (id == R.id.action_settings) {
-            return true;
+        switch (id) {
+            case R.id.action_settings:
+                return true;
+            case R.id.refresh:
+                Toast.makeText(getApplicationContext(),
+                        getResources().getString(R.string.refreshing),Toast.LENGTH_SHORT).show();
+                RequestQueue queue = Volley.newRequestQueue(MainActivity.this);
+                JsonArrayRequest request = new JsonArrayRequest(Constants.url, new Response.Listener<JSONArray>() {
+                    @Override
+                    public void onResponse(JSONArray response) {
+                        //Log.v("response",response.toString());
+                        for (int i = 0; i < response.length(); i++){
+                            try {
+                                coinIdList.add(
+                                        response.getJSONObject(i).getString(Constants.id)
+                                );
+                                coinNameList.add(
+                                        response.getJSONObject(i).getString(Constants.name)
+                                );
+                            }catch (JSONException e){
+                                e.printStackTrace();
+                            }
+                        }
+                        Toast.makeText(getApplicationContext(),getResources()
+                                .getString(R.string.done),Toast.LENGTH_SHORT).show();
+                    }
+                }, new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Toast.makeText(getApplicationContext(),getResources().getString(R.string.error),
+                                Toast.LENGTH_SHORT).show();
+                    }
+                });
+                queue.add(request);
+                break;
+            default:
+                break;
         }
         return super.onOptionsItemSelected(item);
     }
-
 
     public JSONObject getCoin(String coinId, JSONArray coins){
         JSONObject coin;
@@ -94,7 +183,6 @@ public class MainActivity extends AppCompatActivity
                     @Override
                     public void onResponse(JSONArray response) {
                         float percentage;
-                        Log.v("response",response.toString());
                         coinData = getCoin(coinId, response);
                         try{
                             viewHolder.symbol.setText(
@@ -120,6 +208,11 @@ public class MainActivity extends AppCompatActivity
                             }
                         }catch (JSONException e){
                             e.printStackTrace();
+                        }catch (NullPointerException nullptr){
+                            nullptr.printStackTrace();
+                            Toast.makeText(getApplicationContext(),
+                                    getResources().getString(R.string.error),
+                                    Toast.LENGTH_SHORT).show();
                         }
                     }
                 }, new Response.ErrorListener() {
