@@ -1,7 +1,9 @@
 package com.example.ivan.crypto;
 
 import android.app.Dialog;
+import android.content.ContentValues;
 import android.content.DialogInterface;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -82,22 +84,25 @@ public class MainActivity extends AppCompatActivity
         builder.setPositiveButton(getResources().getString(R.string.ok), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
+                DataBase dataBase = new DataBase(getApplicationContext());
+                SQLiteDatabase db = dataBase.getWritableDatabase();
+                ContentValues contentValues;
                 SparseBooleanArray checkedItems = listView.getCheckedItemPositions();
-                String[] monedas = new String[checkedItems.size()];
                 for (int i = 0; i < checkedItems.size(); i++){
                     if(checkedItems.get(checkedItems.keyAt(i))){
                         Log.v("checked",coinNameList.get(checkedItems.keyAt(i)));
-                        monedas[i] = coinIdList.get(checkedItems.keyAt(i));
+                        contentValues = new ContentValues();
+                        contentValues.put(Constants.coinId,coinIdList.get(checkedItems.keyAt(i)));
+                        db.insert(Constants.myCoins,null,contentValues);
                     }
                 }
-                adapter.setMonedas(monedas);
-                dialog.cancel();
+                adapter.refresh(getApplicationContext());
+                dialog.dismiss();
             }
         });
         builder.setNeutralButton(getResources().getString(R.string.cancel), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                dialog.cancel();
             }
         });
         return builder.create();
