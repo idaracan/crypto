@@ -15,12 +15,15 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.util.SparseBooleanArray;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.SearchView;
 import android.widget.Toast;
@@ -68,10 +71,33 @@ public class MainActivity extends AppCompatActivity
             public void onClick(View v) {
                 Dialog dialog = makeDialog();
                 dialog.show();
+                final SearchAdapter searchAdapter = new SearchAdapter
+                        (MainActivity.this,coinNameList);
+                /*
                 ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(MainActivity.this,
                                 android.R.layout.simple_list_item_multiple_choice, coinNameList);
                 listView = dialog.findViewById(R.id.list);
                 listView.setAdapter(arrayAdapter);
+                */
+                listView = dialog.findViewById(R.id.list);
+                listView.setAdapter(searchAdapter);
+                EditText search = dialog.findViewById(R.id.search);
+                search.addTextChangedListener(new TextWatcher() {
+                    @Override
+                    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+                    }
+
+                    @Override
+                    public void onTextChanged(CharSequence s, int start, int before, int count) {
+                        searchAdapter.getFilter().filter(s.toString());
+                    }
+
+                    @Override
+                    public void afterTextChanged(Editable s) {
+
+                    }
+                });
             }
         });
     }
