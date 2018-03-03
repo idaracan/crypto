@@ -6,35 +6,47 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.CheckedTextView;
 import android.widget.Filter;
 import android.widget.Filterable;
-import android.widget.TextView;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
- * Created by ivan on 15/02/18.
+ * Courtesy of Francis Fish.
+ * https://gist.github.com/fjfish/3024308
  */
 
 public class SearchAdapter extends BaseAdapter implements Filterable {
-
-    private List<String>originalData = null;
-    private List<String>filteredData = null;
+    private Map<String, String> filteredMapData = new HashMap<>();
+    private List<String> originalIdList, originalNameList, filteredNameList, filteredIdList;
     private LayoutInflater mInflater;
     private ItemFilter mFilter = new ItemFilter();
 
-    public SearchAdapter(Context context, List<String> data) {
-        this.filteredData = data ;
-        this.originalData = data ;
+    public SearchAdapter(Context context, Map<String, String> originalMapData) {
+        this.originalIdList = new ArrayList<>(originalMapData.keySet());
+        this.originalNameList = new ArrayList<>(originalMapData.values());
+        this.filteredNameList = originalNameList;
+        this.filteredIdList = originalIdList;
         mInflater = LayoutInflater.from(context);
     }
 
+    public List<String> getFilteredIdList(){
+        return filteredIdList;
+    }
+
+    public List<String> getFilteredNameList() {
+        return filteredNameList;
+    }
+
     public int getCount() {
-        return filteredData.size();
+        return filteredNameList.size();
     }
 
     public Object getItem(int position) {
-        return filteredData.get(position);
+        return filteredNameList.get(position);
     }
 
     public long getItemId(int position) {
@@ -51,12 +63,12 @@ public class SearchAdapter extends BaseAdapter implements Filterable {
         } else {
             holder = (ViewHolder) convertView.getTag();
         }
-        holder.text.setText(filteredData.get(position));
+        holder.text.setText(filteredNameList.get(position));
         return convertView;
     }
 
     static class ViewHolder {
-        TextView text;
+        CheckedTextView text;
     }
 
     public Filter getFilter() {
@@ -66,26 +78,26 @@ public class SearchAdapter extends BaseAdapter implements Filterable {
     private class ItemFilter extends Filter {
         @Override
         protected FilterResults performFiltering(CharSequence constraint) {
+            Map<String, String> filteredMapData = new HashMap<>();
             String filterString = constraint.toString().toLowerCase();
             FilterResults results = new FilterResults();
-            final List<String> list = originalData;
-            int count = list.size();
-            final ArrayList<String> nlist = new ArrayList<String>(count);
-            String filterableString ;
-            for (int i = 0; i < count; i++) {
-                filterableString = list.get(i);
+            String filterableString;
+            for (int i = 0; i < originalNameList.size(); i++) {
+                filterableString = originalNameList.get(i);
                 if (filterableString.toLowerCase().contains(filterString)) {
-                    nlist.add(filterableString);
+                    filteredMapData.put(originalIdList.get(i),filterableString);
                 }
             }
-            results.values = nlist;
-            results.count = nlist.size();
+            results.values = filteredMapData;
+            results.count = filteredMapData.size();
             return results;
         }
         @SuppressWarnings("unchecked")
         @Override
         protected void publishResults(CharSequence constraint, FilterResults results) {
-            filteredData = (ArrayList<String>) results.values;
+            Map<String, String> filteredMapData = (HashMap<String, String>) results.values;
+            filteredNameList = new ArrayList<>(filteredMapData.values());
+            filteredIdList = new ArrayList<>(filteredMapData.keySet());
             notifyDataSetChanged();
         }
 

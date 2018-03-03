@@ -9,7 +9,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -22,10 +21,8 @@ import android.util.SparseBooleanArray;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.SearchView;
 import android.widget.Toast;
 
 import com.android.volley.RequestQueue;
@@ -39,16 +36,20 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity
         implements RecyclerAdapter.getCoinValuesCallback{
     RecyclerView recyclerView;
     JSONObject coinData;
-    List<String> coinIdList = new ArrayList<>();
-    List<String> coinNameList = new ArrayList<>();
+    List<String> coinIdList, coinNameList, searchedCoinNames, searchedCoinIds;
     ListView listView;
+    HashMap<String, String> coin;
     RecyclerAdapter adapter;
+    SearchAdapter searchAdapter;
     @Override
     protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
@@ -58,11 +59,13 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        if (getIntent().hasExtra(Constants.myCoins)){
-            Intent intent = getIntent();
-            Bundle bundle = intent.getBundleExtra(Constants.myCoins);
-            coinNameList = bundle.getStringArrayList(Constants.name);
-            coinIdList = bundle.getStringArrayList(Constants.id);
+        Intent recievedIntent = getIntent();
+        if (recievedIntent.hasExtra(Constants.myCoins)){
+            coin = (HashMap<String, String>) recievedIntent.getSerializableExtra(Constants.myCoins);
+            coinNameList = new ArrayList<>(coin.values());
+            searchedCoinNames = coinNameList;
+            coinIdList = new ArrayList<>(coin.keySet());
+            searchedCoinIds = coinIdList;
         }
 
         FloatingActionButton fab = findViewById(R.id.fab);
@@ -71,14 +74,7 @@ public class MainActivity extends AppCompatActivity
             public void onClick(View v) {
                 Dialog dialog = makeDialog();
                 dialog.show();
-                final SearchAdapter searchAdapter = new SearchAdapter
-                        (MainActivity.this,coinNameList);
-                /*
-                ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(MainActivity.this,
-                                android.R.layout.simple_list_item_multiple_choice, coinNameList);
-                listView = dialog.findViewById(R.id.list);
-                listView.setAdapter(arrayAdapter);
-                */
+                searchAdapter = new SearchAdapter(MainActivity.this,coin);
                 listView = dialog.findViewById(R.id.list);
                 listView.setAdapter(searchAdapter);
                 EditText search = dialog.findViewById(R.id.search);
@@ -91,6 +87,8 @@ public class MainActivity extends AppCompatActivity
                     @Override
                     public void onTextChanged(CharSequence s, int start, int before, int count) {
                         searchAdapter.getFilter().filter(s.toString());
+                        searchedCoinNames = searchAdapter.getFilteredNameList();
+                        searchedCoinIds   = searchAdapter.getFilteredIdList();
                     }
 
                     @Override
@@ -128,14 +126,15 @@ public class MainActivity extends AppCompatActivity
                 SparseBooleanArray checkedItems = listView.getCheckedItemPositions();
                 for (int i = 0; i < checkedItems.size(); i++){
                     if(checkedItems.get(checkedItems.keyAt(i))){
-                        Log.v("checked",coinNameList.get(checkedItems.keyAt(i)));
                         contentValues = new ContentValues();
-                        contentValues.put(Constants.coinId,coinIdList.get(checkedItems.keyAt(i)));
-                        contentValues.put(Constants.name,coinNameList.get(checkedItems.keyAt(i)));
+                        contentValues.put(Constants.coinId,searchedCoinIds.get(checkedItems.keyAt(i)));
+                        contentValues.put(Constants.name, searchedCoinNames.get(checkedItems.keyAt(i)));
                         db.insert(Constants.myCoins,null,contentValues);
                     }
                 }
                 adapter.refresh(getApplicationContext());
+                searchedCoinIds = coinIdList;
+                searchedCoinNames = coinNameList;
                 dialog.dismiss();
             }
         });

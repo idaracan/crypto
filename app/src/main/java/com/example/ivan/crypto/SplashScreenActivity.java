@@ -16,6 +16,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * Created by ivan on 15/02/18.
@@ -29,23 +32,17 @@ public class SplashScreenActivity extends AppCompatActivity {
         JsonArrayRequest request = new JsonArrayRequest(Constants.urlAll, new Response.Listener<JSONArray>() {
             @Override
             public void onResponse(JSONArray response) {
-                Bundle coins = new Bundle();
-                ArrayList<String> coinIdList = new ArrayList<>();
-                ArrayList<String> coinNameList = new ArrayList<>();
+                LinkedHashMap<String, String> coins = new LinkedHashMap<>();
+                String key, value;
                 for (int i = 0; i < response.length(); i++){
                     try {
-                        coinIdList.add(
-                                response.getJSONObject(i).getString(Constants.id)
-                        );
-                        coinNameList.add(
-                                response.getJSONObject(i).getString(Constants.name)
-                        );
+                        key     = response.getJSONObject(i).getString(Constants.id);
+                        value   = response.getJSONObject(i).getString(Constants.name);
+                        coins.put(key,value);
                     }catch (JSONException e){
                         e.printStackTrace();
                     }
                 }
-                coins.putStringArrayList(Constants.id,coinIdList);
-                coins.putStringArrayList(Constants.name,coinNameList);
                 toMain(coins);
             }
         }, new Response.ErrorListener() {
@@ -59,10 +56,11 @@ public class SplashScreenActivity extends AppCompatActivity {
         queue.add(request);
     }
 
-    private void toMain(Bundle coins) {
+    private void toMain(LinkedHashMap coins) {
         Intent toMain = new Intent(SplashScreenActivity.this,MainActivity.class);
         if (coins != null){
-            toMain.putExtra(Constants.myCoins,coins);
+            HashMap<String, String> hashMap = (HashMap<String, String>) coins;
+            toMain.putExtra(Constants.myCoins,hashMap);
         }
         startActivity(toMain);
         finish();
