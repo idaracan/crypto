@@ -14,12 +14,14 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.util.SparseBooleanArray;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -34,16 +36,20 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity
         implements RecyclerAdapter.getCoinValuesCallback{
     RecyclerView recyclerView;
     JSONObject coinData;
-    List<String> coinIdList = new ArrayList<>();
-    List<String> coinNameList = new ArrayList<>();
+    List<String> coinIdList, coinNameList, searchedCoinNames, searchedCoinIds;
     ListView listView;
+    HashMap<String, String> coin;
     RecyclerAdapter adapter;
+    SearchAdapter searchAdapter;
     @Override
     protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
@@ -53,11 +59,13 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        if (getIntent().hasExtra(Constants.myCoins)){
-            Intent intent = getIntent();
-            Bundle bundle = intent.getBundleExtra(Constants.myCoins);
-            coinNameList = bundle.getStringArrayList(Constants.name);
-            coinIdList = bundle.getStringArrayList(Constants.id);
+        Intent recievedIntent = getIntent();
+        if (recievedIntent.hasExtra(Constants.myCoins)){
+            coin = (HashMap<String, String>) recievedIntent.getSerializableExtra(Constants.myCoins);
+            coinNameList = new ArrayList<>(coin.values());
+            searchedCoinNames = coinNameList;
+            coinIdList = new ArrayList<>(coin.keySet());
+            searchedCoinIds = coinIdList;
         }
 
         FloatingActionButton fab = findViewById(R.id.fab);
@@ -66,10 +74,26 @@ public class MainActivity extends AppCompatActivity
             public void onClick(View v) {
                 Dialog dialog = makeDialog();
                 dialog.show();
-                ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(MainActivity.this,
-                                android.R.layout.simple_list_item_multiple_choice, coinNameList);
+                searchAdapter = new SearchAdapter(MainActivity.this,coin);
                 listView = dialog.findViewById(R.id.list);
-                listView.setAdapter(arrayAdapter);
+                listView.setAdapter(searchAdapter);
+                EditText search = dialog.findViewById(R.id.search);
+                search.addTextChangedListener(new TextWatcher() {
+                    @Override
+                    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+                    }
+                    @Override
+                    public void onTextChanged(CharSequence s, int start, int before, int count) {
+                        searchAdapter.getFilter().filter(s.toString());
+                        searchedCoinNames = searchAdapter.getFilteredNameList();
+                        searchedCoinIds   = searchAdapter.getFilteredIdList();
+                    }
+                    @Override
+                    public void afterTextChanged(Editable s) {
+
+                    }
+                });
             }
         });
     }
@@ -94,21 +118,29 @@ public class MainActivity extends AppCompatActivity
         builder.setPositiveButton(getResources().getString(R.string.ok), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                DataBase dataBase = new DataBase(getApplicationContext());
-                SQLiteDatabase db = dataBase.getWritableDatabase();
-                ContentValues contentValues;
-                SparseBooleanArray checkedItems = listView.getCheckedItemPositions();
-                for (int i = 0; i < checkedItems.size(); i++){
-                    if(checkedItems.get(checkedItems.keyAt(i))){
-                        Log.v("checked",coinNameList.get(checkedItems.keyAt(i)));
-                        contentValues = new ContentValues();
-                        contentValues.put(Constants.coinId,coinIdList.get(checkedItems.keyAt(i)));
-                        contentValues.put(Constants.name,coinNameList.get(checkedItems.keyAt(i)));
-                        db.insert(Constants.myCoins,null,contentValues);
+                try {
+                    DataBase dataBase = new DataBase(getApplicationContext());
+                    SQLiteDatabase db = dataBase.getWritableDatabase();
+                    ContentValues contentValues;
+                    SparseBooleanArray checkedItems = listView.getCheckedItemPositions();
+                    for (int i = 0; i < checkedItems.size(); i++) {
+                        if (checkedItems.get(checkedItems.keyAt(i))) {
+                            contentValues = new ContentValues();
+                            contentValues.put(Constants.coinId, searchedCoinIds.get(checkedItems.keyAt(i)));
+                            contentValues.put(Constants.name, searchedCoinNames.get(checkedItems.keyAt(i)));
+                            db.insert(Constants.myCoins, null, contentValues);
+                        }
                     }
+                    adapter.refresh(getApplicationContext());
+                    searchedCoinIds = coinIdList;
+                    searchedCoinNames = coinNameList;
+                    dialog.dismiss();
+                }catch (IndexOutOfBoundsException except){
+                    except.printStackTrace();
+                    Log.e("error", except.getMessage());
+                }catch (Exception e){
+                    e.printStackTrace();
                 }
-                adapter.refresh(getApplicationContext());
-                dialog.dismiss();
             }
         });
         builder.setNeutralButton(getResources().getString(R.string.cancel), new DialogInterface.OnClickListener() {
