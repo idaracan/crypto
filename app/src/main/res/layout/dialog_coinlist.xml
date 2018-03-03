@@ -10,6 +10,7 @@
         android:hint="@string/search"
         android:drawableEnd="@android:drawable/ic_menu_search"
         android:inputType="text"
+        android:imeOptions="actionNone"
         android:id="@+id/search"
         />
     <ListView

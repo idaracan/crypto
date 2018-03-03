@@ -83,14 +83,12 @@ public class MainActivity extends AppCompatActivity
                     public void beforeTextChanged(CharSequence s, int start, int count, int after) {
 
                     }
-
                     @Override
                     public void onTextChanged(CharSequence s, int start, int before, int count) {
                         searchAdapter.getFilter().filter(s.toString());
                         searchedCoinNames = searchAdapter.getFilteredNameList();
                         searchedCoinIds   = searchAdapter.getFilteredIdList();
                     }
-
                     @Override
                     public void afterTextChanged(Editable s) {
 
@@ -120,22 +118,29 @@ public class MainActivity extends AppCompatActivity
         builder.setPositiveButton(getResources().getString(R.string.ok), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                DataBase dataBase = new DataBase(getApplicationContext());
-                SQLiteDatabase db = dataBase.getWritableDatabase();
-                ContentValues contentValues;
-                SparseBooleanArray checkedItems = listView.getCheckedItemPositions();
-                for (int i = 0; i < checkedItems.size(); i++){
-                    if(checkedItems.get(checkedItems.keyAt(i))){
-                        contentValues = new ContentValues();
-                        contentValues.put(Constants.coinId,searchedCoinIds.get(checkedItems.keyAt(i)));
-                        contentValues.put(Constants.name, searchedCoinNames.get(checkedItems.keyAt(i)));
-                        db.insert(Constants.myCoins,null,contentValues);
+                try {
+                    DataBase dataBase = new DataBase(getApplicationContext());
+                    SQLiteDatabase db = dataBase.getWritableDatabase();
+                    ContentValues contentValues;
+                    SparseBooleanArray checkedItems = listView.getCheckedItemPositions();
+                    for (int i = 0; i < checkedItems.size(); i++) {
+                        if (checkedItems.get(checkedItems.keyAt(i))) {
+                            contentValues = new ContentValues();
+                            contentValues.put(Constants.coinId, searchedCoinIds.get(checkedItems.keyAt(i)));
+                            contentValues.put(Constants.name, searchedCoinNames.get(checkedItems.keyAt(i)));
+                            db.insert(Constants.myCoins, null, contentValues);
+                        }
                     }
+                    adapter.refresh(getApplicationContext());
+                    searchedCoinIds = coinIdList;
+                    searchedCoinNames = coinNameList;
+                    dialog.dismiss();
+                }catch (IndexOutOfBoundsException except){
+                    except.printStackTrace();
+                    Log.e("error", except.getMessage());
+                }catch (Exception e){
+                    e.printStackTrace();
                 }
-                adapter.refresh(getApplicationContext());
-                searchedCoinIds = coinIdList;
-                searchedCoinNames = coinNameList;
-                dialog.dismiss();
             }
         });
         builder.setNeutralButton(getResources().getString(R.string.cancel), new DialogInterface.OnClickListener() {
