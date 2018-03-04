@@ -1,13 +1,17 @@
 apply plugin: 'com.android.application'
-
+def versionMajor = 1
+def versionMinor = 0
+def versionPatch = 1
 android {
     compileSdkVersion 26
     defaultConfig {
         applicationId "com.example.ivan.crypto"
-        minSdkVersion 21
+        minSdkVersion 19
         targetSdkVersion 26
-        versionCode 1
-        versionName "1.0"
+        versionCode versionMajor * 10000
+                    + versionMinor * 100
+                    + versionPatch
+        versionName "${versionMajor}.${versionMinor}.${versionPatch}"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {

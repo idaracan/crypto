@@ -85,13 +85,10 @@ public class MainActivity extends AppCompatActivity
                     }
                     @Override
                     public void onTextChanged(CharSequence s, int start, int before, int count) {
-                        searchAdapter.getFilter().filter(s.toString());
-                        searchedCoinNames = searchAdapter.getFilteredNameList();
-                        searchedCoinIds   = searchAdapter.getFilteredIdList();
                     }
                     @Override
                     public void afterTextChanged(Editable s) {
-
+                        searchAdapter.getFilter().filter(s.toString());
                     }
                 });
             }
@@ -126,6 +123,8 @@ public class MainActivity extends AppCompatActivity
                     for (int i = 0; i < checkedItems.size(); i++) {
                         if (checkedItems.get(checkedItems.keyAt(i))) {
                             contentValues = new ContentValues();
+                            searchedCoinNames = searchAdapter.getFilteredNameList();
+                            searchedCoinIds   = searchAdapter.getFilteredIdList();
                             contentValues.put(Constants.coinId, searchedCoinIds.get(checkedItems.keyAt(i)));
                             contentValues.put(Constants.name, searchedCoinNames.get(checkedItems.keyAt(i)));
                             db.insert(Constants.myCoins, null, contentValues);
@@ -173,14 +172,12 @@ public class MainActivity extends AppCompatActivity
                 JsonArrayRequest request = new JsonArrayRequest(Constants.urlAll, new Response.Listener<JSONArray>() {
                     @Override
                     public void onResponse(JSONArray response) {
+                        String key, value;
                         for (int i = 0; i < response.length(); i++){
                             try {
-                                coinIdList.add(
-                                        response.getJSONObject(i).getString(Constants.id)
-                                );
-                                coinNameList.add(
-                                        response.getJSONObject(i).getString(Constants.name)
-                                );
+                                key = response.getJSONObject(i).getString(Constants.id);
+                                value = response.getJSONObject(i).getString(Constants.name);
+                                coin.put(key,value);
                             }catch (JSONException e){
                                 e.printStackTrace();
                             }
@@ -209,7 +206,7 @@ public class MainActivity extends AppCompatActivity
         for (int i = 0; i < coins.length(); i++){
             try {
                 coin = coins.getJSONObject(i);
-                idCoin = coin.getString("id");
+                idCoin = coin.getString(Constants.id);
                 if (idCoin.equals(coinId)){
                     return coin;
                 }
