@@ -1,6 +1,10 @@
 package com.example.ivan.crypto;
 
 import android.app.Dialog;
+import android.support.annotation.NonNull;
+import android.support.design.widget.BottomNavigationView;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -33,6 +37,7 @@ import com.android.volley.toolbox.Volley;
 import com.example.ivan.crypto.Adapters.RecyclerAdapter;
 import com.example.ivan.crypto.Adapters.RecyclerViewHolder;
 import com.example.ivan.crypto.Adapters.SearchAdapter;
+import com.example.ivan.crypto.Fragments.Content;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -92,6 +97,33 @@ public class MainActivity extends AppCompatActivity
                         searchAdapter.getFilter().filter(s.toString());
                     }
                 });
+            }
+        });
+
+        BottomNavigationView bottomNav = findViewById(R.id.bottomNav);
+        bottomNav.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                switch (item.getItemId()){
+                    case R.id.home:
+                        Toast.makeText(getApplicationContext(),"this is home",
+                                Toast.LENGTH_SHORT).show();
+                        break;
+                    case R.id.favorites:
+                        Toast.makeText(getApplicationContext(),"this is favs",
+                                Toast.LENGTH_SHORT).show();
+                        break;
+                    case R.id.highlights:
+
+                        Toast.makeText(getApplicationContext(),"this is highlights",
+                                Toast.LENGTH_SHORT).show();
+                        break;
+                    default:
+                        Toast.makeText(getApplicationContext(),"this should not appear",
+                                Toast.LENGTH_SHORT).show();
+                        break;
+                }
+                return false;
             }
         });
     }
@@ -165,6 +197,9 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
         switch (id) {
             case R.id.action_settings:
+                FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.container,new Content());
+                fragmentTransaction.commit();
                 return true;
             case R.id.refresh_data:
                 refreshRecyclerView();
