@@ -6,7 +6,8 @@
     android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context="com.example.ivan.crypto.MainActivity"
-    tools:showIn="@layout/activity_main">
+    tools:showIn="@layout/activity_main"
+    android:layout_below="@+id/appBar">
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/recyclerView"

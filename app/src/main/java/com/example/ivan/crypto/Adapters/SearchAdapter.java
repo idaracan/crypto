@@ -1,4 +1,4 @@
-package com.example.ivan.crypto;
+package com.example.ivan.crypto.Adapters;
 
 import java.util.ArrayList;
 import android.content.Context;
@@ -9,6 +9,8 @@ import android.widget.BaseAdapter;
 import android.widget.CheckedTextView;
 import android.widget.Filter;
 import android.widget.Filterable;
+
+import com.example.ivan.crypto.R;
 
 import java.util.HashMap;
 import java.util.List;

@@ -30,6 +30,9 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.Volley;
+import com.example.ivan.crypto.Adapters.RecyclerAdapter;
+import com.example.ivan.crypto.Adapters.RecyclerViewHolder;
+import com.example.ivan.crypto.Adapters.SearchAdapter;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -37,9 +40,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 public class MainActivity extends AppCompatActivity
         implements RecyclerAdapter.getCoinValuesCallback{
@@ -107,7 +108,8 @@ public class MainActivity extends AppCompatActivity
     public Dialog makeDialog(){
         AlertDialog.Builder builder;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            builder = new AlertDialog.Builder(this, android.R.style.Theme_Material_Light_Dialog_Alert);
+            builder = new AlertDialog.Builder(this,
+                    android.R.style.Theme_Material_Light_Dialog_Alert);
         } else {
             builder = new AlertDialog.Builder(this);
         }
@@ -125,8 +127,10 @@ public class MainActivity extends AppCompatActivity
                             contentValues = new ContentValues();
                             searchedCoinNames = searchAdapter.getFilteredNameList();
                             searchedCoinIds   = searchAdapter.getFilteredIdList();
-                            contentValues.put(Constants.coinId, searchedCoinIds.get(checkedItems.keyAt(i)));
-                            contentValues.put(Constants.name, searchedCoinNames.get(checkedItems.keyAt(i)));
+                            contentValues.put(Constants.coinId,
+                                    searchedCoinIds.get(checkedItems.keyAt(i)));
+                            contentValues.put(Constants.name,
+                                    searchedCoinNames.get(checkedItems.keyAt(i)));
                             db.insert(Constants.myCoins, null, contentValues);
                         }
                     }
@@ -234,15 +238,18 @@ public class MainActivity extends AppCompatActivity
                                     String.format("%s USD",coinData.getString(Constants.usd))
                             );
                             try {
-                                percentage = Float.parseFloat(coinData.getString(Constants.percentChange1h));
+                                percentage = Float.parseFloat(coinData.
+                                        getString(Constants.percentChange1h));
                                 viewHolder.percentage.setText(String.format("%s%%",percentage));
                                 if (percentage < 0) {
                                     viewHolder.percentage.setTextColor(
-                                            ContextCompat.getColor(getApplicationContext(), R.color.red)
+                                            ContextCompat.getColor(
+                                                    getApplicationContext(), R.color.red)
                                     );
                                 }else if (percentage > 0){
                                     viewHolder.percentage.setTextColor(
-                                            ContextCompat.getColor(getApplicationContext(), R.color.green)
+                                            ContextCompat.getColor(
+                                                    getApplicationContext(), R.color.green)
                                     );
                                 }
                             } catch (NumberFormatException e){
