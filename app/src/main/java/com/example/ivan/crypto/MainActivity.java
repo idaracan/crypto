@@ -60,7 +60,7 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        refreshRecyclerView();
+        //refreshRecyclerView();
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -104,26 +104,10 @@ public class MainActivity extends AppCompatActivity
         bottomNav.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                switch (item.getItemId()){
-                    case R.id.home:
-                        Toast.makeText(getApplicationContext(),"this is home",
-                                Toast.LENGTH_SHORT).show();
-                        break;
-                    case R.id.favorites:
-                        Toast.makeText(getApplicationContext(),"this is favs",
-                                Toast.LENGTH_SHORT).show();
-                        break;
-                    case R.id.highlights:
-
-                        Toast.makeText(getApplicationContext(),"this is highlights",
-                                Toast.LENGTH_SHORT).show();
-                        break;
-                    default:
-                        Toast.makeText(getApplicationContext(),"this should not appear",
-                                Toast.LENGTH_SHORT).show();
-                        break;
-                }
-                return false;
+                FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.container,Content.getInstance(item.getItemId()));
+                fragmentTransaction.commit();
+                return true;
             }
         });
     }
@@ -136,6 +120,7 @@ public class MainActivity extends AppCompatActivity
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         adapter.setCallback(this);
     }
+
 
     public Dialog makeDialog(){
         AlertDialog.Builder builder;
@@ -196,11 +181,6 @@ public class MainActivity extends AppCompatActivity
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         switch (id) {
-            case R.id.action_settings:
-                FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.container,new Content());
-                fragmentTransaction.commit();
-                return true;
             case R.id.refresh_data:
                 refreshRecyclerView();
             break;
