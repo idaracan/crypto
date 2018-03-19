@@ -35,7 +35,7 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerViewHolder> {
     private LayoutInflater layoutInflater;
     private getCoinValuesCallback callback;
     private Context context;
-
+    int content;
     private View.OnLongClickListener onLongClickListener = new View.OnLongClickListener() {
         @Override
         public boolean onLongClick(View v) {
@@ -46,18 +46,29 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerViewHolder> {
         }
     };
 
-    public RecyclerAdapter(Context context){
+    public RecyclerAdapter(Context context,int content){
         this.context = context;
-        refresh(context);
+        this.content = content;
+        refresh(context,content);
         layoutInflater = LayoutInflater.from(context);
     }
 
-    public void refresh(Context context) {
+    public void refresh(Context context, int content) {
         myCoins = new ArrayList<>();
         myCoinNames = new ArrayList<>();
         DataBase dataBase = new DataBase(context);
         SQLiteDatabase liteDatabase = dataBase.getWritableDatabase();
-        Cursor cursor = liteDatabase.rawQuery("select * from "+ Constants.myCoins,null);
+        Cursor cursor;
+        String table;
+        switch (content){
+            default:
+                table = Constants.myCoins;
+                break;
+            case R.id.favorites:
+                table = Constants.favorites;
+                break;
+        }
+        cursor = liteDatabase.rawQuery("select * from "+ table,null);
         if (cursor.moveToFirst()){
             do {
                 myCoins.add(cursor.getString(cursor.getColumnIndex(Constants.coinId)));
@@ -119,13 +130,14 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerViewHolder> {
                         contentValues.put(Constants.coinId,myCoins.get(pos));
                         contentValues.put(Constants.name,myCoins.get(pos));
                         liteDatabase.insert(Constants.favorites,null, contentValues);
+                        liteDatabase.close();
                         Toast.makeText(context,"Added to favorites",Toast.LENGTH_SHORT).show();
                         break;
                     case 1:
                         String[] whereArgs = {myCoins.get(pos)};
                         liteDatabase.delete(Constants.myCoins,
                                 Constants.coinId + " =?", whereArgs);
-                        refresh(context);
+                        refresh(context,content);
                         dialog.dismiss();
                         break;
                     default:
@@ -136,5 +148,4 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerViewHolder> {
         });
         return builder.create();
     }
-
 }

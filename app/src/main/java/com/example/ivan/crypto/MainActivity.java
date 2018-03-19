@@ -47,20 +47,17 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity
-        implements RecyclerAdapter.getCoinValuesCallback{
-    RecyclerView recyclerView;
-    JSONObject coinData;
+public class MainActivity extends AppCompatActivity {
     List<String> coinIdList, coinNameList, searchedCoinNames, searchedCoinIds;
     ListView listView;
     HashMap<String, String> coin;
-    RecyclerAdapter adapter;
     SearchAdapter searchAdapter;
     @Override
     protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        //refreshRecyclerView();
+
+        changeFragment(R.id.home);
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -104,23 +101,18 @@ public class MainActivity extends AppCompatActivity
         bottomNav.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.container,Content.getInstance(item.getItemId()));
-                fragmentTransaction.commit();
+                int itemId = item.getItemId();
+                changeFragment(itemId);
                 return true;
             }
         });
     }
 
-    private void refreshRecyclerView() {
-        adapter = new RecyclerAdapter(this);
-        recyclerView = findViewById(R.id.recyclerView);
-        recyclerView.setAdapter(adapter);
-        recyclerView.setHasFixedSize(true);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        adapter.setCallback(this);
+    private void changeFragment(int itemId) {
+        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction()
+                .replace(R.id.container, Content.getInstance(itemId));
+        fragmentTransaction.commit();
     }
-
 
     public Dialog makeDialog(){
         AlertDialog.Builder builder;
@@ -151,9 +143,9 @@ public class MainActivity extends AppCompatActivity
                             db.insert(Constants.myCoins, null, contentValues);
                         }
                     }
-                    adapter.refresh(getApplicationContext());
                     searchedCoinIds = coinIdList;
                     searchedCoinNames = coinNameList;
+                    changeFragment(R.id.home);
                     dialog.dismiss();
                 }catch (IndexOutOfBoundsException except){
                     except.printStackTrace();
@@ -182,7 +174,7 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
         switch (id) {
             case R.id.refresh_data:
-                refreshRecyclerView();
+                Toast.makeText(this,"Refresh",Toast.LENGTH_SHORT).show();
             break;
             case R.id.refresh_list:
                 Toast.makeText(getApplicationContext(),
@@ -217,76 +209,5 @@ public class MainActivity extends AppCompatActivity
                 break;
         }
         return super.onOptionsItemSelected(item);
-    }
-
-    public JSONObject getCoin(String coinId, JSONArray coins){
-        JSONObject coin;
-        String idCoin;
-        for (int i = 0; i < coins.length(); i++){
-            try {
-                coin = coins.getJSONObject(i);
-                idCoin = coin.getString(Constants.id);
-                if (idCoin.equals(coinId)){
-                    return coin;
-                }
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-        }
-        return null;
-    }
-
-    @Override
-    public void getCoinValues(final String coinId, final RecyclerViewHolder viewHolder){
-        RequestQueue queue = Volley.newRequestQueue(MainActivity.this);
-        JsonArrayRequest request = new JsonArrayRequest
-                (Constants.url+coinId, new Response.Listener<JSONArray>() {
-                    @Override
-                    public void onResponse(JSONArray response) {
-                        float percentage;
-                        coinData = getCoin(coinId, response);
-                        try{
-                            viewHolder.symbol.setText(
-                                    String.format("%s",coinData.getString(Constants.symbol))
-                            );
-                            viewHolder.usdPrice.setText(
-                                    String.format("%s USD",coinData.getString(Constants.usd))
-                            );
-                            try {
-                                percentage = Float.parseFloat(coinData.
-                                        getString(Constants.percentChange1h));
-                                viewHolder.percentage.setText(String.format("%s%%",percentage));
-                                if (percentage < 0) {
-                                    viewHolder.percentage.setTextColor(
-                                            ContextCompat.getColor(
-                                                    getApplicationContext(), R.color.red)
-                                    );
-                                }else if (percentage > 0){
-                                    viewHolder.percentage.setTextColor(
-                                            ContextCompat.getColor(
-                                                    getApplicationContext(), R.color.green)
-                                    );
-                                }
-                            } catch (NumberFormatException e){
-                                viewHolder.percentage.setText(String.format("%s%%","?"));
-                            }
-                        }catch (JSONException e){
-                            e.printStackTrace();
-                        }catch (NullPointerException nullptr){
-                            nullptr.printStackTrace();
-                            Toast.makeText(getApplicationContext(),
-                                    getResources().getString(R.string.error),
-                                    Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                }, new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        error.printStackTrace();
-                        Toast.makeText(getApplicationContext(),getResources().getString(R.string.error),
-                                Toast.LENGTH_SHORT).show();
-                    }
-                });
-        queue.add(request);
     }
 }
