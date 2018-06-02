@@ -1,9 +1,14 @@
 <resources>
     <string-array name="options">
         <item>Add to favorites</item>
-        <item>Delete Item</item>
+        <item>Delete coin</item>
         <item>Cancel</item>
     </string-array>
+    <string-array name="fav_options">
+        <item>Delete from favorites</item>
+        <item>Cancel</item>
+    </string-array>
+
     <string name="home">Home</string>
     <string name="favs">Favorites</string>
     <string name="Highlights">Highligts</string>

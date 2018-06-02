@@ -1,6 +1,5 @@
 package com.example.ivan.crypto.Fragments;
 
-import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -10,7 +9,6 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.RequestQueue;
@@ -20,8 +18,7 @@ import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.Volley;
 import com.example.ivan.crypto.Adapters.RecyclerAdapter;
 import com.example.ivan.crypto.Adapters.RecyclerViewHolder;
-import com.example.ivan.crypto.Constants;
-import com.example.ivan.crypto.MainActivity;
+import com.example.ivan.crypto.Storage.Constants;
 import com.example.ivan.crypto.R;
 
 import org.json.JSONArray;

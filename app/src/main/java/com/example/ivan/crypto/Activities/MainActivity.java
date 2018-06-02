@@ -1,9 +1,8 @@
-package com.example.ivan.crypto;
+package com.example.ivan.crypto.Activities;
 
 import android.app.Dialog;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
-import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.content.ContentValues;
 import android.content.DialogInterface;
@@ -12,11 +11,8 @@ import android.database.sqlite.SQLiteDatabase;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -34,14 +30,14 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.Volley;
-import com.example.ivan.crypto.Adapters.RecyclerAdapter;
-import com.example.ivan.crypto.Adapters.RecyclerViewHolder;
 import com.example.ivan.crypto.Adapters.SearchAdapter;
 import com.example.ivan.crypto.Fragments.Content;
+import com.example.ivan.crypto.R;
+import com.example.ivan.crypto.Storage.Constants;
+import com.example.ivan.crypto.Storage.DataBase;
 
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;

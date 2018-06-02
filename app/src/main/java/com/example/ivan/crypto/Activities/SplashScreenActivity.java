@@ -1,4 +1,4 @@
-package com.example.ivan.crypto;
+package com.example.ivan.crypto.Activities;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -11,14 +11,14 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.Volley;
+import com.example.ivan.crypto.R;
+import com.example.ivan.crypto.Storage.Constants;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.Map;
 
 /**
  * Created by ivan on 15/02/18.

@@ -9,16 +9,14 @@ import android.database.sqlite.SQLiteDatabase;
 import android.os.Build;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
-import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.Toast;
 
-import com.example.ivan.crypto.Constants;
-import com.example.ivan.crypto.DataBase;
+import com.example.ivan.crypto.Storage.Constants;
+import com.example.ivan.crypto.Storage.DataBase;
 import com.example.ivan.crypto.R;
 
 import java.util.ArrayList;
@@ -60,14 +58,7 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerViewHolder> {
         SQLiteDatabase liteDatabase = dataBase.getWritableDatabase();
         Cursor cursor;
         String table;
-        switch (content){
-            default:
-                table = Constants.myCoins;
-                break;
-            case R.id.favorites:
-                table = Constants.favorites;
-                break;
-        }
+        table = selectTable(content);
         cursor = liteDatabase.rawQuery("select * from "+ table,null);
         if (cursor.moveToFirst()){
             do {
@@ -77,6 +68,19 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerViewHolder> {
         }
         cursor.close();
         notifyDataSetChanged();
+    }
+
+    private String selectTable(int content) {
+        String table;
+        switch (content){
+            default:
+                table = Constants.myCoins;
+                break;
+            case R.id.favorites:
+                table = Constants.favorites;
+                break;
+        }
+        return table;
     }
 
     @Override
@@ -116,36 +120,66 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerViewHolder> {
         } else {
             builder = new AlertDialog.Builder(context);
         }
-        builder.setItems(R.array.options, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                if (which == 0){ dialog.dismiss(); }
-                DataBase dataBase = new DataBase(context);
-                SQLiteDatabase liteDatabase = dataBase.getWritableDatabase();
-                RecyclerViewHolder viewHolder = (RecyclerViewHolder) v.getTag();
-                int pos = viewHolder.getAdapterPosition();
-                switch (which){
-                    case 0:
-                        ContentValues contentValues = new ContentValues();
-                        contentValues.put(Constants.coinId,myCoins.get(pos));
-                        contentValues.put(Constants.name,myCoins.get(pos));
-                        liteDatabase.insert(Constants.favorites,null, contentValues);
-                        liteDatabase.close();
-                        Toast.makeText(context,"Added to favorites",Toast.LENGTH_SHORT).show();
-                        break;
-                    case 1:
-                        String[] whereArgs = {myCoins.get(pos)};
-                        liteDatabase.delete(Constants.myCoins,
-                                Constants.coinId + " =?", whereArgs);
-                        refresh(context,content);
-                        dialog.dismiss();
-                        break;
-                    default:
-                        dialog.dismiss();
-                        break;
-                }
-            }
-        });
+
+        final String table = selectTable(content);
+
+        switch (content){
+            case R.id.home:
+                builder.setItems(R.array.options, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        if (which == 0){ dialog.dismiss(); }
+                        DataBase dataBase = new DataBase(context);
+                        SQLiteDatabase liteDatabase = dataBase.getWritableDatabase();
+                        RecyclerViewHolder viewHolder = (RecyclerViewHolder) v.getTag();
+                        int pos = viewHolder.getAdapterPosition();
+                        switch (which){
+                            case 0:
+                                ContentValues contentValues = new ContentValues();
+                                contentValues.put(Constants.coinId,myCoins.get(pos));
+                                contentValues.put(Constants.name,myCoinNames.get(pos));
+                                liteDatabase.insert(Constants.favorites,null, contentValues);
+                                liteDatabase.close();
+                                Toast.makeText(context,"Added to favorites",Toast.LENGTH_SHORT).show();
+                                break;
+                            case 1:
+                                deleteCoin(dialog, liteDatabase, pos, table);
+                                break;
+                            default:
+                                dialog.dismiss();
+                                break;
+                        }
+                    }
+                });
+                break;
+            case R.id.favorites:
+                builder.setItems(R.array.fav_options, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        if (which == 0){ dialog.dismiss(); }
+                        DataBase dataBase = new DataBase(context);
+                        SQLiteDatabase liteDatabase = dataBase.getWritableDatabase();
+                        RecyclerViewHolder viewHolder = (RecyclerViewHolder) v.getTag();
+                        int pos = viewHolder.getAdapterPosition();
+                        switch (which){
+                            case 0:
+                                deleteCoin(dialog, liteDatabase, pos, table);
+                            default:
+                                dialog.dismiss();
+                                break;
+                        }
+                    }
+                });
+                break;
+        }
         return builder.create();
+    }
+
+    private void deleteCoin(DialogInterface dialog, SQLiteDatabase liteDatabase, int pos, String table) {
+        String[] whereArgs = {myCoins.get(pos)};
+        liteDatabase.delete(table,
+                Constants.coinId + " =?", whereArgs);
+        refresh(context,content);
+        dialog.dismiss();
     }
 }
